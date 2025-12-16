@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Jawaban</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    
+    <script>
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1); // Secara paksa maju 1 langkah, yang memblokir tombol Back
+        };
+    </script>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Jawaban untuk Pertanyaan Anda</h2>
+    
+        <p><b>Pertanyaan:</b> {{ tanya }}</p>
+
+    <hr>
+
+        <h3>Daftar Jawaban ({{ jawaban|length }})</h3>
+    
+    <div id="listJawaban">
+        {% if jawaban %}
+                        {% for jwb in jawaban %}
+                <div class="jawaban-box">{{ loop.index }}. {{ jwb }}</div>
+            {% endfor %}
+        {% else %}
+                        <p>Belum ada jawaban yang masuk. Bagikan link Anda lebih banyak! 📬</p>
+        {% endif %}
+    </div>
+    
+    <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 20px;">Kembali ke Home</button>
+  </div>
+
+</body>
+</html>

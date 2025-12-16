@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Jawab Pertanyaan</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+
+<div class="card">
+  <h2>Pertanyaan:</h2>
+    <p class="question-text">{{ tanya }}</p>
+
+    <form method="POST" action="{{ url_for('jawab_pertanyaan', kode=kode) }}">
+        
+        <textarea name="jawabanInput" rows="5" placeholder="Tulis jawabanmu..." required></textarea>
+        
+        <button class="btn-pink" type="submit">Kirim Jawaban 💌</button>
+        
+    </form>
+    
+    <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 10px;">Home</button>
+</div>
+
+</body>
+</html>

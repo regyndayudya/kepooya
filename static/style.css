@@ -1,0 +1,14 @@
+body { font-family: Poppins, sans-serif; margin:0; background:#fff7eb; color:#444; }
+.card { background:#ffffffdd; backdrop-filter: blur(5px); padding:30px; margin:auto; margin-top:40px; max-width:850px; border-radius:25px; box-shadow:0 10px 25px rgba(255,150,180,0.2); display:flex; flex-direction:column; align-items:center; text-align:center; }
+button { padding:12px 25px; border:none; border-radius:25px; margin:8px 0; font-size:15px; cursor:pointer; width:80%; max-width:300px; transition:0.2s ease; }
+.btn-pink { background:#ff9ccf; color:white; box-shadow:0 4px 10px rgba(255,100,150,0.3); }
+.btn-pink:hover { background:#ff8ac5; }
+.btn-blue { background:#a5d8ff; color:#0b3d66; box-shadow:0 4px 10px rgba(100,150,255,0.3); }
+.btn-blue:hover { background:#92cdff; }
+.btn-gray { background:#ddd; color:#444; }
+.btn-gray:hover { background:#ccc; }
+textarea { width:100%; padding:15px; font-size:15px; margin:10px 0 20px 0; border-radius:18px; border:2px solid #ffbcd9; background:#fff0f6; outline:none; transition:.2s; text-align:left; }
+textarea:focus { border-color:#ff7fbe; background:#ffe8f2; }
+.welcome-title { font-size:45px; font-weight:700; color:#ff7bbb; }
+.welcome-sub { font-size:20px; margin-top:-10px; color:#777; }
+.jawaban-box { background:#fff0f9; padding:12px; margin:6px 0; border-radius:15px; border-left:5}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Buat Pertanyaan</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+
+<div class="card">
+  <h2>📝 Buat Pertanyaan</h2>
+    
+        <form method="POST" action="{{ url_for('buat_pertanyaan') }}" id="buatForm">
+        
+                <textarea name="tanyaInput" rows="5" placeholder="Tulis pertanyaan Anda di sini..." required></textarea>
+        
+                <button class="btn-pink" type="submit">Simpan Pertanyaan 💖</button>
+    </form>
+    
+        <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 10px;">Home</button>
+</div>
+
+</body>
+</html>
