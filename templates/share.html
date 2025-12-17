@@ -1,66 +1,87 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Share Pertanyaan</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <meta charset="UTF-8">
+    <title>Share Pertanyaan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Ambil kode pertanyaan dari URL path
             const pathSegments = window.location.pathname.split('/');
             const kode = pathSegments[pathSegments.length - 1];
-
-            // 1. TAMBAH STATE untuk mendeteksi Back
             history.pushState(null, null, location.href);
-
             window.onpopstate = function() {
-                // 2. Tampilkan notifikasi konfirmasi
                 const confirmLogout = confirm("Apakah anda yakin ingin ke halaman sebelumnya? Sesi akses akan ditutup.");
-
                 if (confirmLogout) {
-                    // 3. Jika YAKIN, hapus sesi di server
                     fetch(`/delete_session/${kode}`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
+                        headers: { 'Content-Type': 'application/json' }
                     })
-                    .then(response => {
-                        // 4. Lakukan navigasi kembali ke halaman sebelumnya
-                        window.history.back();
-                    })
-                    .catch(error => {
-                        console.error('Error saat menghapus sesi:', error);
-                        window.history.back();
-                    });
+                    .then(() => { window.history.back(); })
+                    .catch(error => { console.error('Error:', error); window.history.back(); });
                 } else {
-                    // 5. Jika TIDAK YAKIN/DIBATALKAN, kunci tombol Back
                     history.go(1); 
                 }
             };
         });
+
+        // Fungsi Copy Link yang sudah diperbaiki
+        function executeCopy() {
+            const text = document.getElementById('linkJawab').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                // Pop-up hanya muncul sekali di sini
+                alert("Link berhasil disalin ke clipboard! 📋");
+            });
+        }
     </script>
 </head>
-<body>
+<body class="doodle-bg">
 
 <div class="card">
-  <h2>Yeayy.. Pertanyaan Siap Dibagikan!</h2>
-  <p>💌 Link menjawab:</p>
+  <h2>Yeayy.. Pertanyaan Siap Dibagikan!</h2>
+  <p>💌 Link menjawab:</p>
 
-  <a id="linkJawab" href="{{ link }}">{{ link }}</a>
-  <button class="btn-blue" onclick="copyText('linkJawab')">Copy Link</button>
+  <a id="linkJawab" href="{{ link }}">{{ link }}</a>
+  
+  <button class="btn-blue" id="copyBtn">Copy Link</button>
 
-  <hr style="margin: 20px 0;">
+  <hr style="margin: 20px 0;">
 
-  <p>🔒 Akses Jawaban Anda (Khusus Pembuat Pertanyaan):</p>
-      <a href="{{ url_for('lihat_jawaban', kode=kode, token=temp_token) }}">
-    <button class="btn-pink">Lihat Jawaban Saya 🔍 (Sesi Ini Saja)</button>
-  </a>
- 
-  <button class="btn-gray" onclick="location.href='/home'">Home</button>
+  <p>🔒 Akses Jawaban Anda (Khusus Pembuat Pertanyaan):</p>
+  
+  <button class="btn-pink" id="viewBtn" data-url="{{ url_for('lihat_jawaban', kode=kode, token=temp_token) }}">
+      Lihat Jawaban Saya 🔍 (Sesi Ini Saja)
+  </button>
+ 
+  <button class="btn-gray" data-url="/home">Home</button>
 </div>
+
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // 1. Putar suara klik SEBELUM pop-up/navigasi
+        const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
+        sound.play().catch(err => console.log("Audio play error"));
+
+        // 2. Logika Tombol Copy Link
+        if (btn.id === 'copyBtn') {
+            // Beri jeda sangat singkat agar suara mulai berbunyi sebelum alert muncul
+            setTimeout(executeCopy, 100);
+        }
+
+        // 3. Logika Navigasi (Lihat Jawaban & Home)
+        const targetUrl = btn.getAttribute('data-url');
+        if (targetUrl) {
+            e.preventDefault();
+            setTimeout(function() {
+                window.location.href = targetUrl;
+            }, 400); 
+        }
+    });
+</script>
 
 </body>
 </html>

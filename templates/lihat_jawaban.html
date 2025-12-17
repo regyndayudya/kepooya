@@ -1,41 +1,61 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Daftar Jawaban</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+  <meta charset="UTF-8">
+  <title>Daftar Jawaban</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     
     <script>
+        // Memblokir tombol back
         history.pushState(null, null, location.href);
         window.onpopstate = function() {
-            history.go(1); // Secara paksa maju 1 langkah, yang memblokir tombol Back
+            history.go(1); 
         };
     </script>
 </head>
-<body>
+<body class="doodle-bg">
 
-  <div class="card">
-    <h2>Jawaban untuk Pertanyaan Anda</h2>
-    
-        <p><b>Pertanyaan:</b> {{ tanya }}</p>
+  <div class="card">
+    <h2>Jawaban untuk Pertanyaan Anda</h2>
+    <p><b>Pertanyaan:</b> {{ tanya }}</p>
+    <hr>
+    <h3>Daftar Jawaban ({{ jawaban|length }})</h3>
+    
+    <div id="listJawaban">
+        {% if jawaban %}
+            {% for jwb in jawaban %}
+                <div class="jawaban-box">{{ loop.index }}. {{ jwb }}</div>
+            {% endfor %}
+        {% else %}
+            <p>Belum ada jawaban yang masuk. Bagikan link Anda lebih banyak! 📬</p>
+        {% endif %}
+    </div>
+    
+   <button class="btn-gray btn-home-back" data-url="/home" style="margin-top: 20px;">Kembali ke Home</button>
+  </div>
 
-    <hr>
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
 
-        <h3>Daftar Jawaban ({{ jawaban|length }})</h3>
-    
-    <div id="listJawaban">
-        {% if jawaban %}
-                        {% for jwb in jawaban %}
-                <div class="jawaban-box">{{ loop.index }}. {{ jwb }}</div>
-            {% endfor %}
-        {% else %}
-                        <p>Belum ada jawaban yang masuk. Bagikan link Anda lebih banyak! 📬</p>
-        {% endif %}
-    </div>
-    
-    <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 20px;">Kembali ke Home</button>
-  </div>
+        // 1. Putar suara klik
+        const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
+        sound.play().catch(err => console.log("Audio play error"));
 
+        // 2. Ambil tujuan link
+        const targetUrl = btn.getAttribute('data-url');
+
+        // 3. Jika ada tujuan, pindah halaman
+        if (targetUrl) {
+            e.preventDefault(); 
+            setTimeout(function() {
+                // Gunakan location.assign agar lebih kuat menembus blokir history
+                window.location.assign(targetUrl);
+            }, 400); 
+        }
+    });
+</script>
 </body>
 </html>

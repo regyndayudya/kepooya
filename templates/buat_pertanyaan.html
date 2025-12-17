@@ -6,20 +6,56 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
-<body>
+<body class="doodle-bg">
 
 <div class="card">
-  <h2>📝 Buat Pertanyaan</h2>
+  <h2>📝 Buat Pertanyaan</h2>
     
-        <form method="POST" action="{{ url_for('buat_pertanyaan') }}" id="buatForm">
-        
-                <textarea name="tanyaInput" rows="5" placeholder="Tulis pertanyaan Anda di sini..." required></textarea>
-        
-                <button class="btn-pink" type="submit">Simpan Pertanyaan 💖</button>
-    </form>
-    
-        <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 10px;">Home</button>
+  <form method="POST" action="{{ url_for('buat_pertanyaan') }}" id="buatForm">
+    <textarea name="tanyaInput" rows="5" placeholder="Tulis pertanyaan Anda di sini..." required></textarea>
+    <button class="btn-pink" type="submit" id="submitBtn">Simpan Pertanyaan 💖</button>
+  </form>
+  <button class="btn-gray" data-url="/home">Home</button>    
 </div>
 
+<audio id="clickSound">
+    <source src="{{ url_for('static', filename='click.wav') }}" type="audio/wav">
+</audio>
+
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // Inisialisasi suara
+        const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
+
+        // Logika untuk tombol Simpan (Submit)
+        if (btn.type === 'submit') {
+            const form = btn.closest('form');
+            // Hanya jalankan delay suara jika kolom sudah diisi (valid)
+            if (form.checkValidity()) {
+                e.preventDefault(); 
+                sound.play().catch(err => console.log("Audio error"));
+                
+                setTimeout(function() {
+                    form.submit();
+                }, 400);
+            }
+        } 
+        // Logika untuk tombol Home (Navigasi)
+        else {
+            const targetUrl = btn.getAttribute('data-url');
+            if (targetUrl) {
+                e.preventDefault();
+                sound.play().catch(err => console.log("Audio error"));
+                
+                setTimeout(function() {
+                    window.location.href = targetUrl;
+                }, 400);
+            }
+        }
+    });
+</script>
 </body>
 </html>

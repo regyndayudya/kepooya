@@ -1,18 +1,71 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KEPOYA 🌸 - Welcome</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta charset="UTF-8">
+<title>KEPOYA 🌸 - Welcome</title>
+<!-- Menggunakan url_for untuk memanggil file CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+<ul class="bubbles">
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        <li></li> <li></li>  <li></li> <li></li> <li></li>
+        </ul>
 
-  <div class="card">
-    <h1 class="welcome-title">🌸 Welcome to KEPOYA! 🌸</h1>
-    <p class="welcome-sub">Tempat bertanya & menjawab anonim paling seru 💬💗</p>
-    <button class="btn-pink" onclick="location.href='{{ url_for('home') }}'">Mulai Yuk 💖</button>
-  </div>
+<div class="card">
+  <h1>🌸 Welcome to KEPOYA! 🌸</h1>
+  <p>Tempat bertanya anonym paling seru 💬💗</p>
+  <button class="btn-pink" id="startBtn">Mulai Yuk 💖</button>
+</div>
+
+
+<audio id="clickSound">
+    <source src="{{ url_for('static', filename='click.wav') }}" type="audio/wav">
+</audio>
+
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        
+        if (btn) {
+            // 1. Gunakan Audio Context (Opsional) atau Inisialisasi Audio Langsung
+            const soundPath = "{{ url_for('static', filename='click.wav') }}";
+            const sound = new Audio(soundPath);
+            
+            // 2. Paksa browser memuat audio
+            sound.load(); 
+            
+            // 3. Putar suara
+            const playPromise = sound.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // Suara berhasil diputar
+                    lanjutPindah(btn);
+                }).catch(error => {
+                    console.log("Suara diblokir, tetap pindah halaman...");
+                    lanjutPindah(btn);
+                });
+            }
+        }
+
+        function lanjutPindah(button) {
+            if (button.id === 'startBtn' || button.classList.contains('btn-pink')) {
+                // Beri jeda 400ms agar telinga sempat mendengar suaranya
+                setTimeout(function() {
+                    window.location.assign("/home");
+                }, 400);
+            }
+        }
+    });
+</script>
 
 </body>
 </html>

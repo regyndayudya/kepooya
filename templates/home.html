@@ -1,27 +1,49 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>KEPOYA 🌸 - Home</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>KEPOYA 🌸 - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <script>
-        // Masukkan 'state' baru, membuat /home menjadi dua kali di history
-        history.pushState(null, null, location.href); 
-        
-        // Ketika tombol 'Back' ditekan (onpopstate), paksa maju 1 langkah
-        window.onpopstate = function() {
-            history.go(1); 
+        // Logika Anti-Back yang lebih bersih agar tidak mengganggu navigasi keluar
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
         };
     </script>
-    
 </head>
-<body>
+<body class="doodle-bg">
 
 <div class="card">
-  <h1 style="color:#ff6fb0;">KEPOYA 💌</h1>
-  <button class="btn-pink" onclick="location.href='/buat'">Buat Pertanyaan ✨</button>
+    <h1 style="color:#ff6fb0;">KEPOYA 💌</h1>
+    <button class="btn-pink" data-url="/buat">Buat Pertanyaan ✨</button>
 </div>
 
+<script>
+    document.addEventListener('click', function (e) {
+        // 1. Cari apakah yang diklik adalah tombol
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // 2. Putar suara klik secara instan
+        const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
+        sound.play().catch(err => console.log("Audio diblokir browser sebelum interaksi"));
+
+        // 3. Ambil tujuan link dari atribut data-url
+        const targetUrl = btn.getAttribute('data-url');
+
+        // 4. Proses pindah halaman
+        if (targetUrl) {
+            e.preventDefault(); // Menghentikan proses default jika ada
+            
+            // Jeda 400ms agar suara terdengar, lalu PAKSA pindah halaman
+            setTimeout(function() {
+                // Menggunakan location.replace atau assign untuk menembus lock history
+                window.location.assign(targetUrl);
+            }, 400); 
+        }
+    });
+</script>
 </body>
 </html>

@@ -6,22 +6,57 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
-<body>
+<body class="doodle-bg">
 
 <div class="card">
-  <h2>Pertanyaan:</h2>
-    <p class="question-text">{{ tanya }}</p>
+    <h2>Pertanyaan:</h2>
+    <p class="question-text">{{ tanya }}</p>
 
-    <form method="POST" action="{{ url_for('jawab_pertanyaan', kode=kode) }}">
-        
+    <form method="POST" action="{{ url_for('jawab_pertanyaan', kode=kode) }}" id="jawabForm">
         <textarea name="jawabanInput" rows="5" placeholder="Tulis jawabanmu..." required></textarea>
-        
-        <button class="btn-pink" type="submit">Kirim Jawaban 💌</button>
-        
-    </form>
+        <button class="btn-pink" type="submit" id="kirimBtn">Kirim Jawaban 💌</button>
+    </form> 
     
-    <button class="btn-gray" onclick="location.href='/home'" style="margin-top: 10px;">Home</button>
+    <button class="btn-gray" data-url="/home" style="margin-top: 10px;">Home</button>
 </div>
 
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // 1. Siapkan Suara
+        const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
+
+        // 2. Logika untuk Tombol Kirim Jawaban (Submit)
+        if (btn.id === 'kirimBtn' || btn.type === 'submit') {
+            const form = btn.closest('form');
+            
+            // Cek validasi (apakah textarea sudah diisi?)
+            if (form && form.checkValidity()) {
+                e.preventDefault(); // Tahan pengiriman form instan
+                sound.play().catch(err => console.log("Audio error"));
+                
+                setTimeout(function() {
+                    form.submit(); // Kirim data setelah suara 0.4 detik
+                }, 400);
+            }
+            // Jika form kosong, biarkan browser menunjukkan pesan "required"
+        } 
+        
+        // 3. Logika untuk Tombol Home (Navigasi)
+        else {
+            const targetUrl = btn.getAttribute('data-url');
+            if (targetUrl) {
+                e.preventDefault(); // Stop pindah instan
+                sound.play().catch(err => console.log("Audio error"));
+                
+                setTimeout(function() {
+                    window.location.href = targetUrl;
+                }, 400); 
+            }
+        }
+    });
+</script>
 </body>
 </html>
