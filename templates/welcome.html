@@ -2,30 +2,21 @@
 <html lang="id">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="UTF-8">
-<title>KEPOYA 🌸 - Welcome</title>
-<!-- Menggunakan url_for untuk memanggil file CSS -->
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>KEPOYA 🌸 - Welcome</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<ul class="bubbles">
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        <li></li> <li></li>  <li></li> <li></li> <li></li>
-        </ul>
 
 <div class="card">
   <h1>🌸 Welcome to KEPOYA! 🌸</h1>
   <p>Tempat bertanya anonym paling seru 💬💗</p>
+  
   <button class="btn-pink" id="startBtn">Mulai Yuk 💖</button>
 </div>
-
 
 <audio id="clickSound">
     <source src="{{ url_for('static', filename='click.wav') }}" type="audio/wav">
@@ -33,36 +24,33 @@
 
 <script>
     document.addEventListener('click', function (e) {
+        // Use .closest to handle clicks on the button or elements inside it
         const btn = e.target.closest('button');
         
         if (btn) {
-            // 1. Gunakan Audio Context (Opsional) atau Inisialisasi Audio Langsung
             const soundPath = "{{ url_for('static', filename='click.wav') }}";
             const sound = new Audio(soundPath);
             
-            // 2. Paksa browser memuat audio
             sound.load(); 
             
-            // 3. Putar suara
             const playPromise = sound.play();
 
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // Suara berhasil diputar
                     lanjutPindah(btn);
                 }).catch(error => {
-                    console.log("Suara diblokir, tetap pindah halaman...");
+                    console.log("Suara diblokir browser, tetap pindah halaman...");
                     lanjutPindah(btn);
                 });
             }
         }
 
         function lanjutPindah(button) {
+            // Check if it is the start button
             if (button.id === 'startBtn' || button.classList.contains('btn-pink')) {
-                // Beri jeda 400ms agar telinga sempat mendengar suaranya
                 setTimeout(function() {
-                    window.location.assign("/home");
-                }, 400);
+                    window.location.assign("/home"); // Redirect to home
+                }, 400); // 400ms delay to hear the click
             }
         }
     });

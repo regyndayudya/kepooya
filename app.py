@@ -1,86 +1,92 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-import random
+import os
 import json
+import random
+import string
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = '@o<j4AH*I+0qZ>4meUG;SuIq:1DK=Q'
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-import random
-import string
+# CONFIGURATION
+# This folder will hold all your individual question files
+DB_FOLDER = 'db_data'
 
-# Load database.json content
-def load_db():
-    try:
-        with open('database.json', 'r') as f:
-            data = json.load(f)
-            if 'pertanyaan_db' in data:
-                data['pertanyaana_db'] = {str(k): v for k, v in data['pertanyaan_db'].items()}
-            if 'jawaban_db' in data:
-                 data['jawaban_db'] = {str(k): v for k, v in data['jawaban_db'].items()}
-            return data
-        
-    except FileNotFoundError:
-        return {"pertanyaan_db": {}, "jawaban_db": {}, "progress_db": {}}
+# Ensure the database folder exists when the app starts
+if not os.path.exists(DB_FOLDER):
+    os.makedirs(DB_FOLDER)
 
-# Save to database.json
-def save_db(data):
-    with open('database.json', 'w') as f:
+# --- HELPER FUNCTIONS (The "Sharding" Logic) ---
+
+def get_question(kode):
+    """
+    O(1) Operation: Loads ONLY the specific question file needed.
+    Returns the dictionary data or None if file doesn't exist.
+    """
+    filepath = os.path.join(DB_FOLDER, f"{kode}.json")
+    if not os.path.exists(filepath):
+        return None
+    
+    with open(filepath, 'r') as f:
+        return json.load(f)
+
+def save_question(kode, data):
+    """
+    O(1) Operation: Saves ONLY the specific question file.
+    """
+    filepath = os.path.join(DB_FOLDER, f"{kode}.json")
+    with open(filepath, 'w') as f:
         json.dump(data, f, indent=4)
 
-# Route for the home page
+# --- ROUTES ---
+
 @app.route('/')
 def welcome():
    return render_template('welcome.html')
 
-# Route for the home page after login
 @app.route('/home')
 def home():
     return render_template('home.html')
 
-# Route to create a new question
 @app.route('/buat', methods=['GET', 'POST'])
 def buat_pertanyaan():
     if request.method == 'POST':
-        # Menggunakan .get() untuk keamanan
         pertanyaan = request.form.get('tanyaInput', '').strip()
         if not pertanyaan:
             return "Pertanyaan tidak boleh kosong!", 400
 
-        # Generate unique ID dan token
+        # Generate unique ID
         kode_pertanyaan = str(random.randint(10000, 99999))
+        
+        # Check for collision (ensure we don't overwrite an existing file)
+        # This is very fast (O(1)) check
+        while os.path.exists(os.path.join(DB_FOLDER, f"{kode_pertanyaan}.json")):
+             kode_pertanyaan = str(random.randint(10000, 99999))
+
         temp_token = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
         
-        # Simpan token akses Lihat Jawaban ke sesi
+        # Save session data
         session[f'answers_token_{kode_pertanyaan}'] = temp_token
+        session[f'creator_lock_{kode_pertanyaan}'] = True 
 
-        db = load_db()
-
-        db['pertanyaan_db'][kode_pertanyaan] = {
+        # Prepare the data structure for THIS specific question
+        question_data = {
             'tanya': pertanyaan, 
             'jawaban': []
         }
         
-        # =========================================================
-        # LOGIKA PENGUNCI (CREATOR LOCK) DITAMBAHKAN DI SINI
-        # Tandai browser ini sebagai 'pembuat' untuk mencegah menjawab
-        # =========================================================
-        session[f'creator_lock_{kode_pertanyaan}'] = True 
-
-        save_db(db)
+        # SAVE: Creates a new file like 'db_data/12345.json'
+        save_question(kode_pertanyaan, question_data)
         
-        # Redirect ke halaman share, membawa kode dan token sesi
         return redirect(url_for('share', kode=kode_pertanyaan, token=temp_token))
 
     return render_template('buat_pertanyaan.html')
 
-# Route to share the question link
 @app.route('/share/<string:kode>', methods=['GET'])
 def share(kode):
     temp_token = request.args.get('token')
-    db = load_db()
-    kode = str(kode)
-    if kode not in db['pertanyaan_db']:
+    
+    # Check if file exists (O(1) lookup)
+    if not os.path.exists(os.path.join(DB_FOLDER, f"{kode}.json")):
         return "Pertanyaan tidak ditemukan", 404
 
     link = f"{request.url_root}jawab/{kode}"
@@ -90,80 +96,48 @@ def share(kode):
                            kode=kode, 
                            temp_token=temp_token)
 
-# Route for answering a question
 @app.route('/jawab/<string:kode>', methods=['GET', 'POST'])
 def jawab_pertanyaan(kode):
-    db = load_db()
-    kode = str(kode)
-    
-    # =========================================================
-    # 1. PEMERIKSAAN CREATOR LOCK
-    # Mencegah pembuat pertanyaan menjawab pertanyaannya sendiri
-    # =========================================================
+    # Check Creator Lock
     if session.get(f'creator_lock_{kode}'):
         return "Anda adalah pembuat pertanyaan ini. Silakan bagikan link ini kepada orang lain.", 403
     
-    if kode not in db['pertanyaan_db']:
+    # LOAD: Read specific file
+    data = get_question(kode)
+    if not data:
         return "Pertanyaan tidak ditemukan", 404
-        
-    pertanyaan_data = db['pertanyaan_db'][kode]
 
     if request.method == 'POST':
-        # Ambil data jawaban dan validasi
-        jawaban = request.form.get('jawabanInput', '').strip() 
-        
+        jawaban = request.form.get('jawabanInput', '').strip()
         if not jawaban:
             return "Jawaban tidak boleh kosong!", 400
 
-        # Simpan jawaban
-        pertanyaan_data['jawaban'].append(jawaban)
-        save_db(db)
+        # Update data in memory
+        data['jawaban'].append(jawaban)
         
-        # 2. REDIRECT SETELAH BERHASIL (Memberikan efek 'keluar')
-        return redirect(url_for('home'))
-
-    # Metode GET: Tampilkan formulir jawaban
-    # 3. PASTIKAN VARIABEL DIKIRIM KE TEMPLATE
-    return render_template(
-        'jawab_pertanyaan.html', 
-        tanya=pertanyaan_data['tanya'],
-        kode=kode
-    )
-
-    # Metode GET: Tampilkan formulir jawaban
-    return render_template(
-        'jawab_pertanyaan.html', 
-        tanya=pertanyaan_data['tanya'], # <-- PERBAIKAN: Mengirimkan teks pertanyaan
-        kode=kode                      # <-- Mengirimkan kode untuk action form HTML
-    )
-
-# Route to view answers to a question
-# app.py
+        # SAVE: Rewrite only this specific file
+        save_question(kode, data)
+        
+        return redirect(url_for('welcome'))
+    return render_template('jawab_pertanyaan.html', tanya=data['tanya'], kode=kode)
 
 @app.route('/lihatjawaban/<string:kode>/<string:token>', methods=['GET'])
 def lihat_jawaban(kode, token):
-    
-    db = load_db()
-    
     session_key = f'answers_token_{kode}'
 
     if session.get(session_key) == token:
-        if kode not in db['pertanyaan_db']: 
+        # LOAD: Read specific file
+        data = get_question(kode)
+        
+        if not data:
              return "Pertanyaan tidak ditemukan", 404
         
-        pertanyaan_data = db['pertanyaan_db'][kode]
-
-        return render_template(
-            'lihat_jawaban.html', 
-            tanya=pertanyaan_data['tanya'], 
-            jawaban=pertanyaan_data['jawaban']
-        )
-        
+        return render_template('lihat_jawaban.html', 
+                               tanya=data['tanya'], 
+                               jawaban=data['jawaban'])
     else:
-        # Akses Ditolak (hanya jika token di sesi berbeda atau sesi sudah berakhir secara alami)
         return "Akses ditolak atau sesi telah berakhir. Anda harus membuat pertanyaan baru untuk mendapatkan akses.", 403
-    
-# Start the app
-if __name__ == '__main__':
-   app.run(debug=True, host='0.0.0.0') 
 
+if __name__ == '__main__':
+   app.run(debug=True, host='0.0.0.0')
+    
