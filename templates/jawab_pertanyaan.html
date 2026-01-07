@@ -26,10 +26,10 @@
         const btn = e.target.closest('button');
         if (!btn) return;
 
-        // 1. Siapkan Suara
+        
         const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
 
-        // 2. Logika untuk Tombol Kirim Jawaban (Submit)
+        
         if (btn.id === 'kirimBtn' || btn.type === 'submit') {
             const form = btn.closest('form');
             
@@ -39,17 +39,16 @@
                 sound.play().catch(err => console.log("Audio error"));
                 
                 setTimeout(function() {
-                    form.submit(); // Kirim data setelah suara 0.4 detik
+                    form.submit(); 
                 }, 400);
             }
-            // Jika form kosong, biarkan browser menunjukkan pesan "required"
+    
         } 
         
-        // 3. Logika untuk Tombol Home (Navigasi)
         else {
             const targetUrl = btn.getAttribute('data-url');
             if (targetUrl) {
-                e.preventDefault(); // Stop pindah instan
+                e.preventDefault(); 
                 sound.play().catch(err => console.log("Audio error"));
                 
                 setTimeout(function() {

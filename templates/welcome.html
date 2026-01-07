@@ -24,7 +24,6 @@
 
 <script>
     document.addEventListener('click', function (e) {
-        // Use .closest to handle clicks on the button or elements inside it
         const btn = e.target.closest('button');
         
         if (btn) {
@@ -46,11 +45,10 @@
         }
 
         function lanjutPindah(button) {
-            // Check if it is the start button
             if (button.id === 'startBtn' || button.classList.contains('btn-pink')) {
                 setTimeout(function() {
-                    window.location.assign("/home"); // Redirect to home
-                }, 400); // 400ms delay to hear the click
+                    window.location.assign("/home"); 
+                }, 400); 
             }
         }
     });

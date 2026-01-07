@@ -8,7 +8,6 @@
   <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     
     <script>
-        // Memblokir tombol back
         history.pushState(null, null, location.href);
         window.onpopstate = function() {
             history.go(1); 
@@ -41,18 +40,18 @@
         const btn = e.target.closest('button');
         if (!btn) return;
 
-        // 1. Putar suara klik
+       
         const sound = new Audio("{{ url_for('static', filename='click.wav') }}");
         sound.play().catch(err => console.log("Audio play error"));
 
-        // 2. Ambil tujuan link
+       
         const targetUrl = btn.getAttribute('data-url');
 
-        // 3. Jika ada tujuan, pindah halaman
+        
         if (targetUrl) {
             e.preventDefault(); 
             setTimeout(function() {
-                // Gunakan location.assign agar lebih kuat menembus blokir history
+                
                 window.location.assign(targetUrl);
             }, 400); 
         }
